@@ -178,6 +178,12 @@ def main():
 if __name__ == '__main__':
     try:
         main()
+    except IOError as e:
+        import errno
+        if e.errno == errno.EPIPE:
+            # Exit saying we got SIGPIPE.
+            sys.exit(141)
+        raise
     except ScriptError as e:
         print >>sys.stderr, "ERROR: %s" % str(e)
         sys.exit(1)
