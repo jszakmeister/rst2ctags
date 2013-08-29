@@ -126,15 +126,16 @@ def sectionsToTags(sections):
 def genTagsFile(output, tags, sort):
     if sort == "yes":
         tags = sorted(tags)
-        sortedLine = '!_TAG_FILE_SORTED	1\n'
+        sortedLine = '!_TAG_FILE_SORTED\t1\n'
     elif sort == "foldcase":
         tags = sorted(tags, key=lambda x: str(x).lower())
-        sortedLine = '!_TAG_FILE_SORTED	2\n'
+        sortedLine = '!_TAG_FILE_SORTED\t2\n'
     else:
-        sortedLine = '!_TAG_FILE_SORTED	0\n'
+        sortedLine = '!_TAG_FILE_SORTED\t0\n'
 
-    output.write('!_TAG_FILE_FORMAT	2\n')
-    output.write(sortedLine)
+    if output != sys.stdout:
+        output.write('!_TAG_FILE_FORMAT\t2\n')
+        output.write(sortedLine)
 
     for t in tags:
         output.write(str(t))
