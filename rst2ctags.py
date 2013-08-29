@@ -123,11 +123,18 @@ def sectionsToTags(sections):
     return tags
 
 
-def genTagsFile(output, tags):
-    tags = sorted(tags)
+def genTagsFile(output, tags, sort):
+    if sort == "yes":
+        tags = sorted(tags)
+        sortedLine = '!_TAG_FILE_SORTED	1\n'
+    elif sort == "foldcase":
+        tags = sorted(tags, key=lambda x: str(x).lower())
+        sortedLine = '!_TAG_FILE_SORTED	2\n'
+    else:
+        sortedLine = '!_TAG_FILE_SORTED	0\n'
 
     output.write('!_TAG_FILE_FORMAT	2\n')
-    output.write('!_TAG_FILE_SORTED	1\n')
+    output.write(sortedLine)
 
     for t in tags:
         output.write(str(t))
@@ -145,9 +152,11 @@ def main():
             help = 'Write tags into FILE (default: "tags").  Use "-" to write '
                    'tags to stdout.')
     parser.add_option(
-            "", "--sort", metavar="SORT", dest = "sort",
+            "", "--sort", metavar="[yes|foldcase|no]", dest = "sort",
+            choices = ["yes", "no", "foldcase"],
             default = "yes",
-            help = 'Produce sorted output.')
+            help = 'Produce sorted output.  Acceptable values are "yes", '
+                   '"no", and "foldcase".  Default is "yes".')
 
     options, args = parser.parse_args()
 
@@ -160,8 +169,10 @@ def main():
         f = open(filename, 'rb')
         sections = findSections(filename, f.readlines())
 
-        genTagsFile(output, sectionsToTags(sections))
+        genTagsFile(output, sectionsToTags(sections), sort=options.sort)
 
+    output.flush()
+    output.close()
 
 if __name__ == '__main__':
     try:
