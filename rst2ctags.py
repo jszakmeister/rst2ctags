@@ -81,7 +81,7 @@ class Section(object):
 
 
 headingRe = re.compile(r'^[-=^"#*.]+$')
-
+subjectRe = re.compile(r'^[^\s]+.*$')
 
 def findSections(filename, lines):
     sections = []
@@ -90,16 +90,36 @@ def findSections(filename, lines):
     previousSections = []
 
     for i, line in enumerate(lines):
-        if headingRe.match(line):
-            if line[0] not in headingOrder:
-                headingOrder[line[0]] = orderSeen
-                orderSeen += 1
+        if i == 0:
+            continue
 
-            if i == 0:
+        if headingRe.match(line) and subjectRe.match(lines[i-1]):
+            if i >= 2:
+                topLine = lines[i-2]
+            else:
+                topLine = ''
+
+            # If the heading line is to short, then docutils doesn't consider it
+            # a heading.
+            if len(line) < len(lines[i-1]):
                 continue
 
+            key = line[0]
+
+            if headingRe.match(topLine):
+                # If there is an overline, it must match the bottom line.
+                if topLine != line:
+                    # Not a heading.
+                    continue
+                # We have an overline, so double up.
+                key = key + key
+
+            if key not in headingOrder:
+                headingOrder[key] = orderSeen
+                orderSeen += 1
+
             name = lines[i-1].strip()
-            level = headingOrder[line[0]]
+            level = headingOrder[key]
             previousSections = previousSections[:level-1]
             if previousSections:
                 parent = previousSections[-1]
@@ -110,6 +130,17 @@ def findSections(filename, lines):
             s = Section(level, name, lines[i-1], lineNumber, filename, parent)
             previousSections.append(s)
             sections.append(s)
+
+            # Blank lines to help correctly detect:
+            #    foo
+            #    ===
+            #    bar
+            #    ===
+            #
+            # as two underline style headings.
+            lines[i] = lines[i-1] = ''
+            if topLine:
+                lines[i-2] = ''
 
     return sections
 
