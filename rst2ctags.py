@@ -7,7 +7,6 @@
 # you should have received as part of this distribution.
 
 import sys
-import os
 import re
 
 
