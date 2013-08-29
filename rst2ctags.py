@@ -49,7 +49,7 @@ class Tag(object):
 
     @staticmethod
     def section(section):
-        tagAddress = '/^%s$/' % section.name
+        tagAddress = '/^%s$/' % section.line
         t = Tag(section.name, section.filename, tagAddress)
         t.addField('kind', 's')
         t.addField('line', section.lineNumber)
@@ -68,9 +68,10 @@ class Tag(object):
 
 
 class Section(object):
-    def __init__(self, level, name, lineNumber, filename, parent=None):
+    def __init__(self, level, name, line, lineNumber, filename, parent=None):
         self.level = level
         self.name = name
+        self.line = line
         self.lineNumber = lineNumber
         self.filename = filename
         self.parent = parent
@@ -106,7 +107,7 @@ def findSections(filename, lines):
                 parent = None
             lineNumber = i
 
-            s = Section(level, name, lineNumber, filename, parent)
+            s = Section(level, name, lines[i-1], lineNumber, filename, parent)
             previousSections.append(s)
             sections.append(s)
 
@@ -167,7 +168,9 @@ def main():
 
     for filename in args:
         f = open(filename, 'rb')
-        sections = findSections(filename, f.readlines())
+        lines = f.read().splitlines()
+        f.close()
+        sections = findSections(filename, lines)
 
         genTagsFile(output, sectionsToTags(sections), sort=options.sort)
 
