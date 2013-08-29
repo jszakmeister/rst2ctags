@@ -1,0 +1,4 @@
+*.pyc
+rst2ctags.egg-info
+dist
+build
