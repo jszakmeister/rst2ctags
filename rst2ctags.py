@@ -164,9 +164,8 @@ def genTagsFile(output, tags, sort):
     else:
         sortedLine = '!_TAG_FILE_SORTED\t0\n'
 
-    if output != sys.stdout:
-        output.write('!_TAG_FILE_FORMAT\t2\n')
-        output.write(sortedLine)
+    output.write('!_TAG_FILE_FORMAT\t2\n')
+    output.write(sortedLine)
 
     for t in tags:
         output.write(str(t))
