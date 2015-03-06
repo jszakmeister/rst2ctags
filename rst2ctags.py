@@ -10,7 +10,7 @@ import sys
 import re
 
 
-__version__ = '0.2.0-dev'
+__version__ = '0.1.4'
 
 
 class ScriptError(Exception):
