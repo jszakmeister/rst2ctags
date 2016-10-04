@@ -99,7 +99,7 @@ class Section(object):
         return '<Section %s %d %d>' % (self.name, self.level, self.lineNumber)
 
 
-headingRe = re.compile(r'''^[-=~:^"#*._+`']+$''')
+headingRe = re.compile(r'''^([-=~:^"#*._+`'])\1+$''')
 subjectRe = re.compile(r'^[^\s]+.*$')
 
 def findSections(filename, lines):
