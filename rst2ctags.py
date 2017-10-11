@@ -6,6 +6,8 @@
 # This software is licensed as described in the file LICENSE.txt, which
 # you should have received as part of this distribution.
 
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import re
 
@@ -248,7 +250,7 @@ def cli_main():
             sys.exit(141)
         raise
     except ScriptError as e:
-        print >>sys.stderr, "ERROR: %s" % str(e)
+        print("ERROR: %s" % str(e), file=sys.stderr)
         sys.exit(1)
 
 
