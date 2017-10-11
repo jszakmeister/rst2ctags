@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-# Copyright (C) 2013 John Szakmeister <john@szakmeister.net>
+# Copyright (C) 2013-2017 John Szakmeister <john@szakmeister.net>
 # All rights reserved.
 #
 # This software is licensed as described in the file LICENSE.txt, which
@@ -102,6 +102,7 @@ class Section(object):
 headingRe = re.compile(r'''^([-=~:^"#*._+`'])\1+$''')
 subjectRe = re.compile(r'^[^\s]+.*$')
 
+
 def findSections(filename, lines):
     sections = []
     headingOrder = {}
@@ -118,8 +119,8 @@ def findSections(filename, lines):
             else:
                 topLine = ''
 
-            # If the heading line is to short, then docutils doesn't consider it
-            # a heading.
+            # If the heading line is to short, then docutils doesn't consider
+            # it a heading.
             if len(line) < len(lines[i-1]):
                 continue
 
@@ -194,19 +195,19 @@ def genTagsFile(output, tags, sort):
 def main():
     from optparse import OptionParser
 
-    parser = OptionParser(usage = "usage: %prog [options] file(s)",
-                          version = __version__)
+    parser = OptionParser(usage="usage: %prog [options] file(s)",
+                          version=__version__)
     parser.add_option(
-            "-f", "--file", metavar = "FILE", dest = "tagfile",
-            default = "tags",
-            help = 'Write tags into FILE (default: "tags").  Use "-" to write '
-                   'tags to stdout.')
+        "-f", "--file", metavar="FILE", dest="tagfile",
+        default="tags",
+        help='Write tags into FILE (default: "tags").  Use "-" to write '
+             'tags to stdout.')
     parser.add_option(
-            "", "--sort", metavar="[yes|foldcase|no]", dest = "sort",
-            choices = ["yes", "no", "foldcase"],
-            default = "yes",
-            help = 'Produce sorted output.  Acceptable values are "yes", '
-                   '"no", and "foldcase".  Default is "yes".')
+        "", "--sort", metavar="[yes|foldcase|no]", dest="sort",
+        choices=["yes", "no", "foldcase"],
+        default="yes",
+        help='Produce sorted output.  Acceptable values are "yes", '
+             '"no", and "foldcase".  Default is "yes".')
 
     options, args = parser.parse_args()
 
