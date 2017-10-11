@@ -237,7 +237,8 @@ def main():
     output.flush()
     output.close()
 
-if __name__ == '__main__':
+
+def cli_main():
     try:
         main()
     except IOError as e:
@@ -249,3 +250,7 @@ if __name__ == '__main__':
     except ScriptError as e:
         print >>sys.stderr, "ERROR: %s" % str(e)
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    cli_main()
