@@ -63,8 +63,9 @@ def detect_encoding(filename):
     return encoding or 'latin1'
 
 
-def open_autoenc(filename):
-    encoding = detect_encoding(filename)
+def open_autoenc(filename, encoding=None):
+    if encoding is None:
+        encoding = detect_encoding(filename)
     return io.open(filename, encoding=encoding, newline='')
 
 
@@ -284,6 +285,12 @@ def main():
         help='Write tags into FILE (default: "tags").  Use "-" to write '
              'tags to stdout.')
     parser.add_option(
+        "", "--encoding", metavar="ENCODING", dest="encoding",
+        default=None,
+        help='Skips auto detection and uses the specified encoding for the '
+             'input files.  Encoding name should be one that Python would '
+             'recognize.')
+    parser.add_option(
         "", "--sort", metavar="[yes|foldcase|no]", dest="sort",
         choices=["yes", "no", "foldcase"],
         default="yes",
@@ -304,7 +311,7 @@ def main():
         if sys.version_info[0] == 2:
             filename = filename.decode(sys.getfilesystemencoding())
 
-        with open_autoenc(filename) as f:
+        with open_autoenc(filename, encoding=options.encoding) as f:
             buf = f.read()
 
         lines = buf.splitlines()
