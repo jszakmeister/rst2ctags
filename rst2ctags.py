@@ -137,7 +137,7 @@ class Tag(object):
         return self._tuple() >= other._tuple()
 
     @staticmethod
-    def section(section):
+    def section(section, sro):
         tagName = ctagNameEscape(section.name)
         tagAddress = '/^%s$/' % ctagSearchEscape(section.line)
         t = Tag(tagName, section.filename, tagAddress)
@@ -152,7 +152,7 @@ class Tag(object):
         parents.reverse()
 
         if parents:
-            t.addField('section', '|'.join(parents))
+            t.addField('section', sro.join(parents))
 
         return t
 
@@ -246,11 +246,11 @@ def findSections(filename, lines):
     return sections
 
 
-def sectionsToTags(sections):
+def sectionsToTags(sections, sro):
     tags = []
 
     for section in sections:
-        tags.append(Tag.section(section))
+        tags.append(Tag.section(section, sro))
 
     return tags
 
@@ -296,6 +296,13 @@ def main():
         default="yes",
         help='Produce sorted output.  Acceptable values are "yes", '
              '"no", and "foldcase".  Default is "yes".')
+    parser.add_option(
+        "", "--sro", metavar="SEPARATOR", dest="sro",
+        default="|", action="store",
+        help=u'Use the specified string to scope nested headings.  The '
+              'default is pipe symbol ("|"), but that can be an issue if your '
+              'headings contain the pipe symbol.  It might be more useful to '
+              'use a such as the UTF-8 chevron ("\u00bb").')
 
     options, args = parser.parse_args()
 
@@ -318,7 +325,10 @@ def main():
         del buf
 
         sections = findSections(filename, lines)
-        genTagsFile(output, sectionsToTags(sections), sort=options.sort)
+
+        genTagsFile(output,
+                    sectionsToTags(sections, options.sro),
+                    sort=options.sort)
 
     output.flush()
     output.close()
