@@ -11,11 +11,20 @@ from __future__ import print_function
 
 import codecs
 import io
+import pkg_resources
 import sys
 import re
 
 
-__version__ = '0.2.0-dev'
+def _version():
+    '''Get version.'''
+    try:
+        return pkg_resources.get_distribution('rst2ctags').version
+    except pkg_resources.DistributionNotFound:
+        return 'dev'
+
+
+__version__ = _version()
 
 
 class ScriptError(Exception):
