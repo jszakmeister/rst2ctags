@@ -316,7 +316,11 @@ def main():
     options, args = parser.parse_args()
 
     if sys.version_info[0] == 2:
-        options.sro = options.sro.decode(sys.stdin.encoding)
+        if sys.stdin.encoding:
+            options.sro = options.sro.decode(sys.stdin.encoding)
+        else:
+            import locale
+            options.sro = options.sro.decode(locale.getpreferredencoding())
 
     if options.tagfile == '-':
         if sys.version_info[0] == 2:
