@@ -11,6 +11,7 @@ from __future__ import print_function
 
 import codecs
 import io
+import locale
 import pkg_resources
 import sys
 import re
@@ -316,11 +317,8 @@ def main():
     options, args = parser.parse_args()
 
     if sys.version_info[0] == 2:
-        if sys.stdin.encoding:
-            options.sro = options.sro.decode(sys.stdin.encoding)
-        else:
-            import locale
-            options.sro = options.sro.decode(locale.getpreferredencoding())
+        encoding = sys.stdin.encoding or locale.getpreferredencoding() or 'utf-8'
+        options.sro = options.sro.decode(encoding)
 
     if options.tagfile == '-':
         if sys.version_info[0] == 2:
