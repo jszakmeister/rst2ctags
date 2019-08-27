@@ -86,10 +86,12 @@ def ctag_name_escape(str):
 
 
 def ctag_search_escape(str):
+    str = str.replace('\\', r'\\')
     str = str.replace('\t', r'\t')
     str = str.replace('\r', r'\r')
     str = str.replace('\n', r'\n')
-    str = str.replace('\\', r'\\')
+    for c in '[]*$.^':
+        str = str.replace(c, '\\' + c)
     return str
 
 
