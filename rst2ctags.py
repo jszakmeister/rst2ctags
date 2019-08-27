@@ -79,13 +79,13 @@ def open_autoenc(filename, encoding=None):
     return io.open(filename, encoding=encoding, newline='')
 
 
-def ctagNameEscape(str):
+def ctag_name_escape(str):
     str = re.sub('[\t\r\n]+', ' ', str)
     str = re.sub(r'^\s*\\\((.)\)', r'(\1)', str)
     return str
 
 
-def ctagSearchEscape(str):
+def ctag_search_escape(str):
     str = str.replace('\t', r'\t')
     str = str.replace('\r', r'\r')
     str = str.replace('\n', r'\n')
@@ -94,18 +94,18 @@ def ctagSearchEscape(str):
 
 
 class Tag(object):
-    def __init__(self, tagName, tagFile, tagAddress):
-        self.tagName = tagName
-        self.tagFile = tagFile
-        self.tagAddress = tagAddress
+    def __init__(self, tag_name, tag_file, tag_address):
+        self.tag_name = tag_name
+        self.tag_file = tag_file
+        self.tag_address = tag_address
         self.fields = []
 
-    def addField(self, type, value=None):
+    def add_field(self, type, value=None):
         if type == 'kind':
             type = None
         self.fields.append((type, value or ""))
 
-    def _formatFields(self):
+    def format_fields(self):
         formattedFields = []
         for name, value in self.fields:
             if name:
@@ -117,16 +117,16 @@ class Tag(object):
 
     def render(self):
         return '%s\t%s\t%s;"\t%s' % (
-            self.tagName, self.tagFile, self.tagAddress, self._formatFields())
+            self.tag_name, self.tag_file, self.tag_address, self.format_fields())
 
     def __repr__(self):
         return "<Tag name:%r file:%r: addr:%r %r>" % (
-            self.tagName, self.tagFile, self.tagAddress,
-            self._formatFields().replace('\t', ' '))
+            self.tag_name, self.tag_file, self.tag_address,
+            self.format_fields().replace('\t', ' '))
 
     def _tuple(self):
-        return (self.tagName, self.tagFile, self.tagAddress,
-                self._formatFields())
+        return (self.tag_name, self.tag_file, self.tag_address,
+                self.format_fields())
 
     def __eq__(self, other):
         return self._tuple() == other._tuple()
@@ -148,21 +148,21 @@ class Tag(object):
 
     @staticmethod
     def section(section, sro):
-        tagName = ctagNameEscape(section.name)
-        tagAddress = '/^%s$/' % ctagSearchEscape(section.line)
-        t = Tag(tagName, section.filename, tagAddress)
-        t.addField('kind', 's')
-        t.addField('line', section.lineNumber)
+        tag_name = ctag_name_escape(section.name)
+        tag_address = '/^%s$/' % ctag_search_escape(section.line)
+        t = Tag(tag_name, section.filename, tag_address)
+        t.add_field('kind', 's')
+        t.add_field('line', section.lineNumber)
 
         parents = []
         p = section.parent
         while p is not None:
-            parents.append(ctagNameEscape(p.name))
+            parents.append(ctag_name_escape(p.name))
             p = p.parent
         parents.reverse()
 
         if parents:
-            t.addField('section', sro.join(parents))
+            t.add_field('section', sro.join(parents))
 
         return t
 
@@ -180,7 +180,7 @@ class Section(object):
         return '<Section %s %d %d>' % (self.name, self.level, self.lineNumber)
 
 
-def popSections(sections, level):
+def pop_sections(sections, level):
     while sections:
         s = sections.pop()
         if s and s.level < level:
@@ -188,11 +188,11 @@ def popSections(sections, level):
             return
 
 
-headingRe = re.compile(r'''^([-=~:^"#*._+`'])\1+$''')
-subjectRe = re.compile(r'^[^\s]+.*$')
+heading_re = re.compile(r'''^([-=~:^"#*._+`'])\1+$''')
+subject_re = re.compile(r'^[^\s]+.*$')
 
 
-def findSections(filename, lines):
+def find_sections(filename, lines):
     sections = []
 
     previousSections = []
@@ -203,7 +203,7 @@ def findSections(filename, lines):
         if i == 0:
             continue
 
-        if headingRe.match(line) and subjectRe.match(lines[i - 1]):
+        if heading_re.match(line) and subject_re.match(lines[i - 1]):
             if i >= 2:
                 topLine = lines[i-2]
             else:
@@ -217,7 +217,7 @@ def findSections(filename, lines):
             name = lines[i-1].strip()
             key = line[0]
 
-            if headingRe.match(topLine):
+            if heading_re.match(topLine):
                 # If there is an overline, it must match the bottom line.
                 if topLine != line:
                     # Not a heading.
@@ -230,7 +230,7 @@ def findSections(filename, lines):
 
             level = level_values[key]
 
-            popSections(previousSections, level)
+            pop_sections(previousSections, level)
             if previousSections:
                 parent = previousSections[-1]
             else:
@@ -256,7 +256,7 @@ def findSections(filename, lines):
     return sections
 
 
-def sectionsToTags(sections, sro):
+def sections_to_tags(sections, sro):
     tags = []
 
     for section in sections:
@@ -265,7 +265,7 @@ def sectionsToTags(sections, sro):
     return tags
 
 
-def genTagsFile(output, tags, sort):
+def gen_tags_file(output, tags, sort):
     if sort == "yes":
         tags = sorted(tags)
         sortedLine = b'!_TAG_FILE_SORTED\t1\n'
@@ -338,11 +338,11 @@ def main():
         lines = buf.splitlines()
         del buf
 
-        sections = findSections(filename, lines)
+        sections = find_sections(filename, lines)
 
-        genTagsFile(output,
-                    sectionsToTags(sections, options.sro),
-                    sort=options.sort)
+        gen_tags_file(output,
+                      sections_to_tags(sections, options.sro),
+                      sort=options.sort)
 
     output.flush()
     output.close()
