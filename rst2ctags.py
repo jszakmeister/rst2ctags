@@ -318,6 +318,9 @@ def main():
 
     options, args = parser.parse_args()
 
+    if not args:
+        raise ScriptError("No input files specified.")
+
     if sys.version_info[0] == 2:
         encoding = sys.stdin.encoding or locale.getpreferredencoding() or 'utf-8'
         options.sro = options.sro.decode(encoding)
