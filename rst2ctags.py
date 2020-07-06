@@ -267,12 +267,10 @@ def sections_to_tags(sections, sro):
     return tags
 
 
-def gen_tags_file(output, tags, sort):
+def gen_tags_header(output, sort):
     if sort == "yes":
-        tags = sorted(tags)
         sortedLine = b'!_TAG_FILE_SORTED\t1\n'
     elif sort == "foldcase":
-        tags = sorted(tags, key=lambda x: str(x).lower())
         sortedLine = b'!_TAG_FILE_SORTED\t2\n'
     else:
         sortedLine = b'!_TAG_FILE_SORTED\t0\n'
@@ -280,6 +278,13 @@ def gen_tags_file(output, tags, sort):
     output.write(b'!_TAG_FILE_ENCODING\tutf-8\n')
     output.write(b'!_TAG_FILE_FORMAT\t2\n')
     output.write(sortedLine)
+
+
+def gen_tags_content(output, sort, tags):
+    if sort == "yes":
+        tags = sorted(tags)
+    elif sort == "foldcase":
+        tags = sorted(tags, key=lambda x: str(x).lower())
 
     for t in tags:
         output.write(t.render().encode('utf-8'))
@@ -333,6 +338,8 @@ def main():
     else:
         output = open(options.tagfile, 'wb')
 
+    gen_tags_header(output, options.sort)
+
     for filename in args:
         if sys.version_info[0] == 2:
             filename = filename.decode(sys.getfilesystemencoding())
@@ -345,12 +352,16 @@ def main():
 
         sections = find_sections(filename, lines)
 
-        gen_tags_file(output,
-                      sections_to_tags(sections, options.sro),
-                      sort=options.sort)
+        gen_tags_content(output,
+                         options.sort,
+                         sections_to_tags(sections, options.sro))
 
     output.flush()
     output.close()
+
+
+def print_error(e):
+    print("ERROR: %s" % str(e), file=sys.stderr)
 
 
 def cli_main():
@@ -361,9 +372,10 @@ def cli_main():
         if e.errno == errno.EPIPE:
             # Exit saying we got SIGPIPE.
             sys.exit(141)
-        raise
+        print_error(e)
+        sys.exit(1)
     except ScriptError as e:
-        print("ERROR: %s" % str(e), file=sys.stderr)
+        print_error(e)
         sys.exit(1)
 
 
