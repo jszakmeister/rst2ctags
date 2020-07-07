@@ -340,21 +340,27 @@ def main():
 
     gen_tags_header(output, options.sort)
 
-    for filename in args:
-        if sys.version_info[0] == 2:
-            filename = filename.decode(sys.getfilesystemencoding())
+    all_sections = []
 
-        with open_autoenc(filename, encoding=options.encoding) as f:
-            buf = f.read()
+    try:
+        for filename in args:
+            if sys.version_info[0] == 2:
+                filename = filename.decode(sys.getfilesystemencoding())
 
-        lines = buf.splitlines()
-        del buf
+            with open_autoenc(filename, encoding=options.encoding) as f:
+                buf = f.read()
 
-        sections = find_sections(filename, lines)
+            lines = buf.splitlines()
+            del buf
 
+            sections = find_sections(filename, lines)
+            all_sections.extend(sections)
+    finally:
+        # We do this to match ctags behavior... even when a file is missing,
+        # it'll write out the tags it has.
         gen_tags_content(output,
                          options.sort,
-                         sections_to_tags(sections, options.sro))
+                         sections_to_tags(all_sections, options.sro))
 
     output.flush()
     output.close()
