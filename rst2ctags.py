@@ -10,6 +10,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import codecs
+import errno
 import io
 import locale
 import pkg_resources
@@ -347,8 +348,14 @@ def main():
             if sys.version_info[0] == 2:
                 filename = filename.decode(sys.getfilesystemencoding())
 
-            with open_autoenc(filename, encoding=options.encoding) as f:
-                buf = f.read()
+            try:
+                with open_autoenc(filename, encoding=options.encoding) as f:
+                    buf = f.read()
+            except IOError as e:
+                if e.errno == errno.EPIPE:
+                    raise
+                print_warning(e)
+                continue
 
             lines = buf.splitlines()
             del buf
@@ -366,6 +373,10 @@ def main():
     output.close()
 
 
+def print_warning(e):
+    print("WARNING: %s" % str(e), file=sys.stderr)
+
+
 def print_error(e):
     print("ERROR: %s" % str(e), file=sys.stderr)
 
@@ -374,7 +385,6 @@ def cli_main():
     try:
         main()
     except IOError as e:
-        import errno
         if e.errno == errno.EPIPE:
             # Exit saying we got SIGPIPE.
             sys.exit(141)
