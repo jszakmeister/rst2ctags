@@ -99,28 +99,28 @@ class Tag(object):
             type = None
         self.fields.append((type, value or ""))
 
-    def format_fields(self):
-        formattedFields = []
+    def _format_fields(self):
+        formatted_fields = []
         for name, value in self.fields:
             if name:
                 s = '%s:%s' % (name, value or "")
             else:
                 s = str(value)
-            formattedFields.append(s)
-        return '\t'.join(formattedFields)
+            formatted_fields.append(s)
+        return '\t'.join(formatted_fields)
 
     def render(self):
         return '%s\t%s\t%s;"\t%s' % (
-            self.tag_name, self.tag_file, self.tag_address, self.format_fields())
+            self.tag_name, self.tag_file, self.tag_address, self._format_fields())
 
     def __repr__(self):
-        return "<Tag name:%r file:%r: addr:%r %r>" % (
+        return "<Tag name:%s file:%s: addr:%s %s>" % (
             self.tag_name, self.tag_file, self.tag_address,
-            self.format_fields().replace('\t', ' '))
+            self._format_fields().replace('\t', ' '))
 
     def _tuple(self):
         return (self.tag_name, self.tag_file, self.tag_address,
-                self.format_fields())
+                self._format_fields())
 
     def __eq__(self, other):
         return self._tuple() == other._tuple()
@@ -146,7 +146,7 @@ class Tag(object):
         tag_address = '/^%s$/' % ctag_search_escape(section.line)
         t = Tag(tag_name, section.filename, tag_address)
         t.add_field('kind', 's')
-        t.add_field('line', section.lineNumber)
+        t.add_field('line', section.line_number)
 
         parents = []
         p = section.parent
@@ -162,16 +162,16 @@ class Tag(object):
 
 
 class Section(object):
-    def __init__(self, level, name, line, lineNumber, filename, parent=None):
+    def __init__(self, level, name, line, line_number, filename, parent=None):
         self.level = level
         self.name = name
         self.line = line
-        self.lineNumber = lineNumber
+        self.line_number = line_number
         self.filename = filename
         self.parent = parent
 
     def __repr__(self):
-        return '<Section %s %d %d>' % (self.name, self.level, self.lineNumber)
+        return '<Section %s %d %d>' % (self.name, self.level, self.line_number)
 
 
 def pop_sections(sections, level):
@@ -189,7 +189,7 @@ subject_re = re.compile(r'^[^\s]+.*$')
 def find_sections(filename, lines):
     sections = []
 
-    previousSections = []
+    previous_sections = []
     level_values = {}
     level = 0
 
@@ -199,9 +199,9 @@ def find_sections(filename, lines):
 
         if heading_re.match(line) and subject_re.match(lines[i - 1]):
             if i >= 2:
-                topLine = lines[i-2]
+                top_line = lines[i-2]
             else:
-                topLine = ''
+                top_line = ''
 
             # If the heading line is to short, then docutils doesn't consider
             # it a heading.
@@ -211,9 +211,9 @@ def find_sections(filename, lines):
             name = lines[i-1].strip()
             key = line[0]
 
-            if heading_re.match(topLine):
+            if heading_re.match(top_line):
                 # If there is an overline, it must match the bottom line.
-                if topLine != line:
+                if top_line != line:
                     # Not a heading.
                     continue
                 # We have an overline, so double up.
@@ -224,16 +224,16 @@ def find_sections(filename, lines):
 
             level = level_values[key]
 
-            pop_sections(previousSections, level)
-            if previousSections:
-                parent = previousSections[-1]
+            pop_sections(previous_sections, level)
+            if previous_sections:
+                parent = previous_sections[-1]
             else:
                 parent = None
-            lineNumber = i
+            line_number = i
 
-            s = Section(level, name, lines[i-1], lineNumber,
+            s = Section(level, name, lines[i-1], line_number,
                         filename, parent)
-            previousSections.append(s)
+            previous_sections.append(s)
             sections.append(s)
 
             # Blank lines to help correctly detect:
@@ -244,7 +244,7 @@ def find_sections(filename, lines):
             #
             # as two underline style headings.
             lines[i] = lines[i-1] = ''
-            if topLine:
+            if top_line:
                 lines[i-2] = ''
 
     return sections
@@ -261,15 +261,15 @@ def sections_to_tags(sections, sro):
 
 def gen_tags_header(output, sort):
     if sort == "yes":
-        sortedLine = b'!_TAG_FILE_SORTED\t1\t//\n'
+        sorted_line = b'!_TAG_FILE_SORTED\t1\t//\n'
     elif sort == "foldcase":
-        sortedLine = b'!_TAG_FILE_SORTED\t2\t//\n'
+        sorted_line = b'!_TAG_FILE_SORTED\t2\t//\n'
     else:
-        sortedLine = b'!_TAG_FILE_SORTED\t0\t//\n'
+        sorted_line = b'!_TAG_FILE_SORTED\t0\t//\n'
 
     output.write(b'!_TAG_FILE_ENCODING\tutf-8\t//\n')
     output.write(b'!_TAG_FILE_FORMAT\t2\t//\n')
-    output.write(sortedLine)
+    output.write(sorted_line)
 
 
 def gen_tags_content(output, sort, tags):
